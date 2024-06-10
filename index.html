@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Course Recommendation System</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7f7f7;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #555;
+        }
+
+        input[type="text"] {
+            width: calc(100% - 22px);
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 16px;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        #recommendations {
+            margin-top: 20px;
+        }
+
+        .collapsible {
+            background-color: #f9f9f9;
+            cursor: pointer;
+            padding: 18px;
+            width: 100%;
+            border: none;
+            text-align: left;
+            outline: none;
+            font-size: 15px;
+            transition: background-color 0.3s;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .collapsible:hover {
+            background-color: #e0e0e0;
+        }
+
+        .active {
+            background-color: #ddd;
+        }
+
+        .content {
+            padding: 0 18px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.2s ease-out;
+            background-color: #f9f9f9;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .content p {
+            margin: 0;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Course Recommendation System</h1>
+        <form id="recommendForm" action="/recommend" method="get">
+            <label for="course_title">Enter Course Title:</label>
+            <input type="text" id="course_title" name="course_title" required>
+            <br>
+            <input type="submit" value="Get Recommendations">
+        </form>
+
+        <div id="recommendations">
+            <!-- Recommendations will be dynamically populated here -->
+        </div>
+    </div>
+
+    <script>
+        // Function to fetch recommendations and display them
+        function getRecommendations() {
+            var courseTitle = document.getElementById("course_title").value;
+            fetch(`/recommend?course_title=${courseTitle}`)
+                .then(response => response.json())
+                .then(data => {
+                    var recommendationsDiv = document.getElementById("recommendations");
+                    recommendationsDiv.innerHTML = ""; // Clear previous recommendations
+                    if (data.error) {
+                        recommendationsDiv.innerHTML = `<p>${data.error}</p>`;
+                    } else {
+                        data.forEach(course => {
+                            var courseElement = document.createElement("div");
+                            courseElement.innerHTML = `
+                                <button class="collapsible">${course.course_title}</button>
+                                <div class="content">
+                                    <p>
+                                        Published Timestamp: ${course.published_timestamp}<br>
+                                        Course ID: ${course.course_id}<br>
+                                        URL: <a href="${course.url}">${course.url}</a><br>
+                                        Is Paid: ${course.is_paid}<br>
+                                        Price: ${course.price}<br>
+                                        Number of Subscribers: ${course.num_subscribers}<br>
+                                        Number of Reviews: ${course.num_reviews}<br>
+                                        Number of Lectures: ${course.num_lectures}<br>
+                                        Level: ${course.level}<br>
+                                        Content Duration: ${course.content_duration}<br>
+                                        Subject: ${course.subject}<br>
+                                        Year: ${course.year}<br>
+                                        Month: ${course.month}<br>
+                                        Day: ${course.day}<br>
+                                        Quarter: ${course.quarter}<br>
+                                        Profit: ${course.profit}<br>
+                                        Duration Category: ${course.duration_category}<br>
+                                        Price Category: ${course.price_category}<br>
+                                    </p>
+                                </div>
+                            `;
+                            recommendationsDiv.appendChild(courseElement);
+                        });
+                        // Add functionality to toggle collapsible content
+                        var coll = document.getElementsByClassName("collapsible");
+                        for (var i = 0; i < coll.length; i++) {
+                            coll[i].addEventListener("click", function() {
+                                this.classList.toggle("active");
+                                var content = this.nextElementSibling;
+                                if (content.style.maxHeight){
+                                    content.style.maxHeight = null;
+                                } else {
+                                    content.style.maxHeight = content.scrollHeight + "px";
+                                }
+                            });
+                        }
+                    }
+                })
+                .catch(error => console.error("Error fetching recommendations:", error));
+        }
+
+        document.getElementById("recommendForm").addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevent form submission
+            getRecommendations(); // Fetch and display recommendations
+        });
+    </script>
+</body>
+</html>
